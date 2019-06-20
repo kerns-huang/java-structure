@@ -33,12 +33,29 @@ public class RedBlackTree<T extends Comparable<T>> {
      *
      *
      */
-    private void leftRotate(RBTreeNode<T> node)
+    private void leftRotate(RBTreeNode<T> x)
     {
-        RBTreeNode right= node.right; //先把右节点拿到
-        node.right=right.left;//把该节点的右节点换成
-        node.parent=node.right;
-        node.left=node.parent;
+        RBTreeNode y= x.right; //先把右节点拿到
+        // 把ly挂载x
+        x.right=y.left;//把x节点的右节点换成ly
+        if (y.left != null)
+            y.left.parent = x;
+        // 将 “x的父亲” 设为 “y的父亲”
+        y.parent=x.parent;
+
+        // 如果 “x的父亲” 是空节点，则将y设为根节点
+        if (x.parent == null) {
+            this.root = y;            // 如果 “x的父亲” 是空节点，则将y设为根节点
+        } else {
+            if (x.parent.left == x)
+                x.parent.left = y;    // 如果 x是它父节点的左孩子，则将y设为“x的父节点的左孩子”
+            else
+                x.parent.right = y;    // 如果 x是它父节点的左孩子，则将y设为“x的父节点的左孩子”
+        }
+        // 将 “x” 设为 “y的左孩子”
+        y.left = x;
+        // 将 “x的父节点” 设为 “y”
+        x.parent = y;
     }
     /*
      * 对红黑树的节点(y)进行右旋转
@@ -53,8 +70,9 @@ public class RedBlackTree<T extends Comparable<T>> {
      *      lx  rx                                rx  ry
      *
      */
-    private void rightRotate(RBTreeNode<T> node)
+    private void rightRotate(RBTreeNode<T> y)
     {
-
+        // 设置x是当前节点的左孩子。
+        RBTreeNode<T> x = y.left;
     }
 }
