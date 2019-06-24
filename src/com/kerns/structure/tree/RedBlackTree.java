@@ -164,7 +164,8 @@ public class RedBlackTree<T extends Comparable<T>> {
            temp.right=node;
        }
        node.color=RED;
-       //TODO 重新平衡，染色
+       // 重新平衡，染色
+        insertFixUp(node);
     }
 
     private boolean isRed(RBTreeNode<T> node)
