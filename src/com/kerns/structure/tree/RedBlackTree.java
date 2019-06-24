@@ -1,6 +1,5 @@
 package com.kerns.structure.tree;
 
-import com.oracle.webservices.internal.api.databinding.DatabindingMode;
 
 /**
  * 红黑数的实现
