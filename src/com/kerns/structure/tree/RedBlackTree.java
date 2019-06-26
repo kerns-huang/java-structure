@@ -201,7 +201,7 @@ public class RedBlackTree<T extends Comparable<T>> {
 
         // 若“父节点存在，并且父节点的颜色是红色”
         while (((parent = parentOf(node))!=null) && isRed(parent)) {
-            gparent = parentOf(parent);
+            gparent = parent.parent;//是否有可能parent为空的情况
 
             //若“父节点”是“祖父节点的左孩子”
             if (parent == gparent.left) {
