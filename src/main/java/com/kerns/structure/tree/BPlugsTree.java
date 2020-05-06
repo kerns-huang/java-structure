@@ -14,8 +14,9 @@ package com.kerns.structure.tree;
  * 10.所有value都在叶子结点出现；
  * 扩展思考 B*树的实现，R树的实现
  * B+树有两种实现，最大值和最小值两种， 目前实现的是最大key链接
- *
+ * <p>
  * 用到该结构的数据库 包含 mysql ，h2，
+ * 稍微有点优化，可以算类二叉树
  * @author xiaohei
  * @create 2020-04-21 下午2:23
  **/
@@ -261,6 +262,7 @@ public class BPlugsTree<K extends Comparable, V> {
         }
 
         public V search(K k) {
+            //二分查找是更优解。
             for (int i = 0; i < size; i++) {
                 if (k.compareTo(keys[i]) == 0) {
                     return (V) values[i];
