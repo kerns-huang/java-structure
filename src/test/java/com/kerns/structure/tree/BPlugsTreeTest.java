@@ -50,7 +50,6 @@ class BPlugsTreeTest {
             bPlugsTree.delete(i);
         }
         Assertions.assertTrue(bPlugsTree.isEmpty());
-        Assertions.assertEquals(null,bPlugsTree.get(3));
     }
 
     @Test

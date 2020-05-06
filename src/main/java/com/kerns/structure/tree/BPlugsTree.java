@@ -15,6 +15,7 @@ package com.kerns.structure.tree;
  * 扩展思考 B*树的实现，R树的实现
  * B+树有两种实现，最大值和最小值两种， 目前实现的是最大key链接
  *
+ * 用到该结构的数据库 包含 mysql ，h2，
  * @author xiaohei
  * @create 2020-04-21 下午2:23
  **/
@@ -383,7 +384,7 @@ public class BPlugsTree<K extends Comparable, V> {
                             Object[] keys = new Object[next.size + this.size];
                             System.arraycopy(this.keys, 0, keys, 0, size);
                             System.arraycopy(next.keys, 0, keys, size, next.size);
-                            Object[] values = new Object[pre.size + this.size];
+                            Object[] values = new Object[next.size + this.size];
                             System.arraycopy(this.values, i, values, 0, size);
                             System.arraycopy(next.values, 0, values, size, next.size);
                             this.next.keys = keys;
