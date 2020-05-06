@@ -122,8 +122,6 @@ public class BPlugsTree2<K extends Comparable, V> {
                 Object[] newValue2 = new Object[size2];
                 System.arraycopy(this.keys, newSize, newKeys2, 0, size2);
                 System.arraycopy(this.values, newSize, newValue2, 0, size2);
-                this.keys = newKeys2;
-                this.values = newValue2;
                 Leaf leaf = new Leaf(m, newKeys2, newValue2);
                 this.next = leaf;
                 leaf.pre = this;
