@@ -9,6 +9,10 @@ public class BPlugsTree2<K extends Comparable, V> {
 
     private Node<K, V> root;
 
+    public BPlugsTree2(int m){
+        root=new Leaf<>(m);
+    }
+
     /**
      * 插入数据
      *
@@ -269,10 +273,10 @@ public class BPlugsTree2<K extends Comparable, V> {
                     this.keys = newKeys;
                     this.values = newValues;
                     //TODO 判断是否需要分裂。
-                    split();
+                    return split();
                 }
             }
-            return null;
+            return this;
         }
 
         private Node split() {
