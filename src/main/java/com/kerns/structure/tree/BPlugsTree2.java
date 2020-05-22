@@ -9,8 +9,21 @@ public class BPlugsTree2<K extends Comparable, V> {
 
     private Node<K, V> root;
 
-    public BPlugsTree2(int m){
-        root=new Leaf<>(m);
+    public BPlugsTree2(int m) {
+        root = new Leaf<>(m);
+    }
+
+
+    public void printTree() {
+        Node node = root;
+        while (node.size > 0) {
+            System.out.print(node.keys + " ");
+            if (node instanceof NonLeaf) {
+                for (int i = 0; i < node.size; i++) {
+                    //打印
+                }
+            }
+        }
     }
 
     /**
@@ -47,7 +60,25 @@ public class BPlugsTree2<K extends Comparable, V> {
      * @return
      */
     public V get(K k) {
-        return root.search(k);
+        Node node = root;
+        //遍历非叶子节点 获取叶子节点的数据
+        while (node instanceof NonLeaf) {
+            node = ((NonLeaf) node).children[node.getIndex(k)];
+        }
+        return (V) ((Leaf) node).values[node.getIndex(k)];
+    }
+
+
+    public void delete(K k) {
+        Node node = root;
+        //1:简单删除
+        while (node instanceof NonLeaf) {
+            node = ((NonLeaf) node).children[node.getIndex(k)];
+        }
+        //叶子节点删除数据
+        node.delete(k);
+        //从叶子节点开始修正tree 树
+
     }
 
 
@@ -97,7 +128,7 @@ public class BPlugsTree2<K extends Comparable, V> {
 
 
         /**
-         * 中间查找,存的数据越多，效率越高
+         * 中间查找,存的数据越多，效率越高,b+树适合这种查找法
          *
          * @param k
          * @return
@@ -309,7 +340,17 @@ public class BPlugsTree2<K extends Comparable, V> {
 
         @Override
         protected void delete(K k) {
-
+            int index = getIndex(k);
+            int newSize = size - 1;
+            Comparable[] newKeys = new Comparable[newSize];
+            Object[] newValue = new Object[newSize];
+            System.arraycopy(this.keys, 0, newKeys, 0, index);
+            System.arraycopy(this.values, newSize, newValue, 0, index);
+            System.arraycopy(this.keys, index + 1, newKeys, index, newSize - index);
+            System.arraycopy(this.values, index + 1, newValue, index, newSize - index);
+            this.size = newSize;
+            this.keys = newKeys;
+            this.values = newValue;
         }
 
         @Override
