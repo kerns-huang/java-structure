@@ -8,9 +8,17 @@ package com.kerns.structure.tree;
 public class BPlugsTree2<K extends Comparable, V> {
 
     private Node<K, V> root;
+    /**
+     * 包含的数据
+     */
+    private int size;
 
-    public BPlugsTree2(int m){
-        root=new Leaf<>(m);
+    public BPlugsTree2(int m) {
+        root = new Leaf<>(m);
+    }
+
+    public Integer size() {
+        return size;
     }
 
     /**
@@ -22,20 +30,16 @@ public class BPlugsTree2<K extends Comparable, V> {
     public void insert(K k, V v) {
         //TODO 查找对应的Node节点，如果没有返回
         Node node = root;
-        while (true) {
-            if (node instanceof NonLeaf) {
-                //非叶子节点
-                int index = node.getIndex(k);
-                node = ((NonLeaf) node).children[index];
-            } else {
-                // 如果是叶子节点，直接插入数据
-                Node newNode = node.insert(k, v);
-                if (root != newNode) {
-                    //更新节点，默认情况下会有多线程进程，h2 使用compare and set 实现
-                    root = newNode;
-                }
-                return;
-            }
+        while (node instanceof NonLeaf) {
+            //非叶子节点
+            int index = node.getIndex(k);
+            node = ((NonLeaf) node).children[index];
+        }
+        // 如果是叶子节点，直接插入数据
+        Node newNode = node.insert(k, v);
+        if (root != newNode) {
+            //更新节点，默认情况下会有多线程进程，h2 使用compare and set 实现
+            root = newNode;
         }
 
     }
@@ -258,25 +262,21 @@ public class BPlugsTree2<K extends Comparable, V> {
 
         @Override
         protected Node insert(K k, V v) {
-            for (int i = 0; i < size; i++) {
-                if (k.compareTo(keys[i]) < 1) {
-                    size++;
-                    Comparable[] newKeys = new Comparable[size];
-                    Object[] newValues = new Object[size];
-                    newKeys[i] = k;
-                    newValues[i] = v;
-                    //TODO 重新赋值
-                    System.arraycopy(this.keys, 0, newKeys, 0, i);
-                    System.arraycopy(this.values, 0, newValues, 0, i);
-                    System.arraycopy(this.keys, i, newKeys, i + 1, size - i - 1);
-                    System.arraycopy(this.keys, i, newValues, i + 1, size - i - 1);
-                    this.keys = newKeys;
-                    this.values = newValues;
-                    //TODO 判断是否需要分裂。
-                    return split();
-                }
-            }
-            return this;
+            int i = getIndex(k);
+            size++;
+            Comparable[] newKeys = new Comparable[size];
+            Object[] newValues = new Object[size];
+            newKeys[i] = k;
+            newValues[i] = v;
+            //TODO 重新赋值
+            System.arraycopy(this.keys, 0, newKeys, 0, i);
+            System.arraycopy(this.values, 0, newValues, 0, i);
+            System.arraycopy(this.keys, i, newKeys, i + 1, size - i - 1);
+            System.arraycopy(this.keys, i, newValues, i + 1, size - i - 1);
+            this.keys = newKeys;
+            this.values = newValues;
+            //TODO 判断是否需要分裂。
+            return split();
         }
 
         private Node split() {
