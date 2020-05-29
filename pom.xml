@@ -5,10 +5,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.kerns.structure</groupId>
-    <artifactId>structure</artifactId>
+    <artifactId>java-structure</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
-    <name>structure</name>
+    <name>java-structure</name>
     <url>http://ocni.com</url>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
