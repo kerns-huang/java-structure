@@ -17,10 +17,13 @@ public class BPlugsTree2<K extends Comparable, V> {
         root = new Leaf<>(m);
     }
 
+    /**
+     * 获取树包含的数据
+     * @return
+     */
     public Integer size() {
-        return size;
+        return root.getKeyCount();
     }
-
     /**
      * 插入数据
      *
@@ -38,14 +41,15 @@ public class BPlugsTree2<K extends Comparable, V> {
             }
             node = ((NonLeaf) node).children[index];
         }
-        // 如果是叶子节点，直接插入数据
+        // 永远返回的是根节点
         Node newNode = node.insert(k, v);
-        if (root != newNode) {
+        //后期重新构建树，计算总的长，先直接通过加减做
+        if (newNode!=null) {
             //更新节点，默认情况下会有多线程进程，h2 使用compare and set 实现
             root = newNode;
         }
-
     }
+
 
     /**
      * 查找数据
@@ -57,6 +61,25 @@ public class BPlugsTree2<K extends Comparable, V> {
         return root.search(k);
     }
 
+    /**
+     * 删除数据
+     * @param k
+     */
+    public void delete(K k){
+        Node node = root;
+        while (node instanceof NonLeaf) {
+            //非叶子节点
+            int index = node.getIndex(k);
+            if (index < 0) {
+                index = -index - 1;
+            }
+            node = ((NonLeaf) node).children[index];
+        }
+        node.delete(k);
+
+
+
+    }
 
     abstract static class Node<K extends Comparable, V> {
         /**
@@ -82,6 +105,8 @@ public class BPlugsTree2<K extends Comparable, V> {
             this.keys = new Comparable[m];
         }
 
+        public abstract int getKeyCount();
+
         /**
          * 插入节点，有可能返回新的根节点
          *
@@ -106,6 +131,8 @@ public class BPlugsTree2<K extends Comparable, V> {
 
         /**
          * 中间查找,存的数据越多，效率越高,
+         * 这个查找是从H2里面直接抄过来的，说是在的，确实比没脑的for循环要快很多，如果是专门做中间件，确实应该可以
+         * 这个事情。
          *
          * @param k
          * @return
@@ -143,6 +170,15 @@ public class BPlugsTree2<K extends Comparable, V> {
 
         protected NonLeaf(int m) {
             super(m);
+        }
+
+        @Override
+        public int getKeyCount() {
+            int keyCount=0;
+            for(int i=0;i<=size;i++){
+                keyCount+=this.children[i].getKeyCount();
+            }
+            return keyCount;
         }
 
         protected NonLeaf(int m, Comparable[] keys, Node[] children) {
@@ -237,7 +273,7 @@ public class BPlugsTree2<K extends Comparable, V> {
             leaf.parent = this.parent;
             return parent.updateInsert((K) oldKeys[newSize], this, leaf);
         }
-        return this;
+        return null;
     }
 
 
@@ -261,6 +297,11 @@ static class Leaf<K extends Comparable, V> extends Node<K, V> {
     protected Leaf(int m) {
         super(m);
         this.values = new Object[m];
+    }
+
+    @Override
+    public int getKeyCount() {
+        return size;
     }
 
     protected Leaf(int m, Comparable[] keys, Object[] values) {
@@ -295,7 +336,7 @@ static class Leaf<K extends Comparable, V> extends Node<K, V> {
 
     private Node split() {
         if (this.size < m) {
-            return this;
+            return null;
         } else {
             // 除以2操作
             int newSize = size >> 1;
@@ -324,7 +365,18 @@ static class Leaf<K extends Comparable, V> extends Node<K, V> {
 
     @Override
     protected void delete(K k) {
-
+        int i= getIndex(k);
+        if(i>0){
+            Comparable[] newKey = new Comparable[this.size-1];
+            Object[] newValue = new Object[this.size-1];
+            System.arraycopy(this.keys,0,newKey,0,i);
+            System.arraycopy(this.values,0,newValue,0,i);
+            System.arraycopy(this.keys,i+1,newKey,0,i);
+            System.arraycopy(this.values,i+1,newValue,0,i);
+            this.size--;
+            this.keys=newKey;
+            this.values=newValue;
+        }
     }
 
     @Override
