@@ -33,6 +33,9 @@ public class BPlugsTree2<K extends Comparable, V> {
         while (node instanceof NonLeaf) {
             //非叶子节点
             int index = node.getIndex(k);
+            if (index < 0) {
+                index = -index - 1;
+            }
             node = ((NonLeaf) node).children[index];
         }
         // 如果是叶子节点，直接插入数据
@@ -76,6 +79,7 @@ public class BPlugsTree2<K extends Comparable, V> {
 
         protected Node(int m) {
             this.m = m;
+            this.keys = new Comparable[m];
         }
 
         /**
@@ -101,7 +105,7 @@ public class BPlugsTree2<K extends Comparable, V> {
 
 
         /**
-         * 中间查找,存的数据越多，效率越高
+         * 中间查找,存的数据越多，效率越高,
          *
          * @param k
          * @return
@@ -127,7 +131,7 @@ public class BPlugsTree2<K extends Comparable, V> {
                 }
                 x = (low + high) >>> 1;
             }
-            return ~low;
+            return ~low;//等于-(low+1)
         }
     }
 
@@ -185,139 +189,150 @@ public class BPlugsTree2<K extends Comparable, V> {
                 this.children[1] = right;
                 return this;
             } else {
+                int i = getIndex(k);
+                if(i<0){
+                    i=-i-1;
+                }
+                Comparable[] newKeys = new Comparable[size + 1];
+                Node[] newChildren = new Node[size + 2];
+                newKeys[i] = k;
+                newChildren[i + 1] = right;
+                System.arraycopy(this.keys, 0, newKeys, 0, i);
+                System.arraycopy(this.children, 0, newChildren, 0, i+1);
+                System.arraycopy(this.keys, i, newKeys, i, size - i);
+                System.arraycopy(this.children, i, newChildren, i + 1, size- i);
+                this.keys=newKeys;
+                this.children=newChildren;
                 size++;
-                for (int i = 0; i <= size; i++) {
-                    if (children[i] == left) {
-                        Comparable[] newKeys = new Comparable[size];
-                        Node[] newChildren = new Node[size];
-                        newKeys[i + 1] = right.keys[0];
-                        newChildren[i + 1] = right;
-                        System.arraycopy(this.keys, 0, newKeys, 0, i);
-                        System.arraycopy(this.children, 0, newChildren, 0, i);
-                        System.arraycopy(this.keys, i, newKeys, i + 1, size - i - 1);
-                        System.arraycopy(this.children, i, newChildren, i + 1, size - i - 1);
-                        return split();
-                    }
-                }
+                return split();
             }
-            return this;
-        }
+    }
 
-        private Node split() {
-            if (this.size >= m) {
-                // 除以2操作
-                Comparable[] oldKeys = this.keys;
-                Node[] oldChildren = this.children;
-                int newSize = size >> 1;
-                Comparable[] newKeys1 = new Comparable[newSize];
-                Node[] newChildren1 = new Node[newSize];
-                System.arraycopy(oldKeys, 0, newKeys1, 0, newSize);
-                System.arraycopy(oldChildren, 0, newChildren1, 0, newSize);
-                this.keys = newKeys1;
-                this.children = newChildren1;
-                int size2 = m - newSize - 1;
-                Comparable[] newKeys2 = new Comparable[size2];
-                Node[] newChildren2 = new Node[size2];
-                System.arraycopy(oldKeys, newSize + 1, newKeys2, 0, size2);
-                System.arraycopy(oldChildren, newSize + 1, newChildren2, 0, size2);
-                NonLeaf leaf = new NonLeaf(m, newKeys2, newChildren2);
-                if (this.parent == null) {
-                    this.parent = new NonLeaf<>(m);
-                }
-                leaf.parent = this.parent;
-                return parent.updateInsert((K) oldKeys[newSize], this, leaf);
+    private Node split() {
+        if (this.size >= m) {
+            // 除以2操作
+            Comparable[] oldKeys = this.keys;
+            Node[] oldChildren = this.children;
+            int newSize = size >> 1;
+            Comparable[] newKeys1 = new Comparable[newSize];
+            Node[] newChildren1 = new Node[newSize+1];
+            System.arraycopy(oldKeys, 0, newKeys1, 0, newSize);
+            System.arraycopy(oldChildren, 0, newChildren1, 0, newSize+1);
+            this.keys = newKeys1;
+            this.children = newChildren1;
+            this.size=newSize;
+            int size2 = m - newSize - 1;
+            Comparable[] newKeys2 = new Comparable[size2];
+            Node[] newChildren2 = new Node[size2+1];
+            System.arraycopy(oldKeys, newSize + 1, newKeys2, 0, size2);
+            System.arraycopy(oldChildren, newSize + 1, newChildren2, 0, size2+1);
+            NonLeaf leaf = new NonLeaf(m, newKeys2, newChildren2);
+            if (this.parent == null) {
+                this.parent = new NonLeaf<>(m);
             }
-            return this;
+            //修改父节点
+            for(Node node:newChildren2){
+                node.parent=leaf;
+            }
+            leaf.parent = this.parent;
+            return parent.updateInsert((K) oldKeys[newSize], this, leaf);
         }
+        return this;
+    }
 
+
+}
+
+static class Leaf<K extends Comparable, V> extends Node<K, V> {
+    /**
+     * 保存的值数据
+     */
+    private Object[] values;
+
+    /**
+     * 后面一个节点
+     */
+    private Leaf<K, V> next;
+    /**
+     * 前面一个节点
+     */
+    private Leaf<K, V> pre;
+
+    protected Leaf(int m) {
+        super(m);
+        this.values = new Object[m];
+    }
+
+    protected Leaf(int m, Comparable[] keys, Object[] values) {
+        super(m);
+        this.size = keys.length;
+        this.keys = keys;
+        this.values = values;
+    }
+
+    @Override
+    protected Node insert(K k, V v) {
+        int i = getIndex(k);
+        if (i < 0) {
+            i = -i - 1;
+        }
+        size++;
+        Comparable[] newKeys = new Comparable[size];
+        Object[] newValues = new Object[size];
+        newKeys[i] = k;
+        newValues[i] = v;
+        //TODO 重新赋值
+        System.arraycopy(this.keys, 0, newKeys, 0, i);
+        System.arraycopy(this.values, 0, newValues, 0, i);
+        System.arraycopy(this.keys, i, newKeys, i + 1, size - i - 1);
+        System.arraycopy(this.keys, i, newValues, i + 1, size - i - 1);
+        this.keys = newKeys;
+        this.values = newValues;
+        //TODO 判断是否需要分裂。
+        return split();
+    }
+
+
+    private Node split() {
+        if (this.size < m) {
+            return this;
+        } else {
+            // 除以2操作
+            int newSize = size >> 1;
+            Comparable[] newKeys1 = new Comparable[newSize];
+            Object[] newValue1 = new Object[newSize];
+            System.arraycopy(this.keys, 0, newKeys1, 0, newSize);
+            System.arraycopy(this.values, 0, newValue1, 0, newSize);
+            int size2 = m - newSize;
+            Comparable[] newKeys2 = new Comparable[size2];
+            Object[] newValue2 = new Object[size2];
+            System.arraycopy(this.keys, newSize, newKeys2, 0, size2);
+            System.arraycopy(this.values, newSize, newValue2, 0, size2);
+            Leaf leaf = new Leaf(m, newKeys2, newValue2);
+            this.next = leaf;
+            leaf.pre = this;
+            this.keys = newKeys1;
+            this.values = newValue1;
+            this.size=newSize;
+            if (this.parent == null) {
+                this.parent = new NonLeaf<>(m);
+            }
+            leaf.parent = this.parent;
+            return parent.updateInsert((K) leaf.keys[0], this, leaf);
+        }
+    }
+
+    @Override
+    protected void delete(K k) {
 
     }
 
-    static class Leaf<K extends Comparable, V> extends Node<K, V> {
-        /**
-         * 保存的值数据
-         */
-        private Object[] values;
-
-        /**
-         * 后面一个节点
-         */
-        private Leaf<K, V> next;
-        /**
-         * 前面一个节点
-         */
-        private Leaf<K, V> pre;
-
-        protected Leaf(int m) {
-            super(m);
-            this.values = new Object[m];
-        }
-
-        protected Leaf(int m, Comparable[] keys, Object[] values) {
-            super(m);
-            this.size = keys.length;
-            this.keys = keys;
-            this.values = values;
-        }
-
-        @Override
-        protected Node insert(K k, V v) {
-            int i = getIndex(k);
-            size++;
-            Comparable[] newKeys = new Comparable[size];
-            Object[] newValues = new Object[size];
-            newKeys[i] = k;
-            newValues[i] = v;
-            //TODO 重新赋值
-            System.arraycopy(this.keys, 0, newKeys, 0, i);
-            System.arraycopy(this.values, 0, newValues, 0, i);
-            System.arraycopy(this.keys, i, newKeys, i + 1, size - i - 1);
-            System.arraycopy(this.keys, i, newValues, i + 1, size - i - 1);
-            this.keys = newKeys;
-            this.values = newValues;
-            //TODO 判断是否需要分裂。
-            return split();
-        }
-
-        private Node split() {
-            if (this.size < m) {
-                return this;
-            } else {
-                // 除以2操作
-                int newSize = size >> 1;
-                Comparable[] newKeys1 = new Comparable[newSize];
-                Object[] newValue1 = new Object[newSize];
-                System.arraycopy(this.keys, 0, newKeys1, 0, newSize);
-                System.arraycopy(this.values, 0, newValue1, 0, newSize);
-                this.keys = newKeys1;
-                this.values = newValue1;
-                int size2 = m - newSize;
-                Comparable[] newKeys2 = new Comparable[size2];
-                Object[] newValue2 = new Object[size2];
-                System.arraycopy(this.keys, newSize, newKeys2, 0, size2);
-                System.arraycopy(this.values, newSize, newValue2, 0, size2);
-                Leaf leaf = new Leaf(m, newKeys2, newValue2);
-                this.next = leaf;
-                leaf.pre = this;
-                if (this.parent == null) {
-                    this.parent = new NonLeaf<>(m);
-                }
-                leaf.parent = this.parent;
-                return parent.updateInsert((K) leaf.keys[0], this, leaf);
-            }
-        }
-
-        @Override
-        protected void delete(K k) {
-
-        }
-
-        @Override
-        protected V search(K k) {
-            int index = getIndex(k);
-            return (V) values[index];
-        }
+    @Override
+    protected V search(K k) {
+        int index = getIndex(k);
+        return (V) values[index];
     }
+}
 
 
 }
