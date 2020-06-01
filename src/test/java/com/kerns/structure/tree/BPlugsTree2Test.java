@@ -27,6 +27,7 @@ class BPlugsTree2Test {
         }
 
         for(int i=10;i<=20;i++){
+            tree.delete(i);
         }
 
     }
