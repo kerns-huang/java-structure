@@ -233,7 +233,8 @@ public class BPlugsTree2<K extends Comparable, V> {
     public int handleNonLeafUnderflow(int sibling, NonLeaf<K, V> left, NonLeaf<K, V> right,
                                       NonLeaf<K, V> parent, List<Integer> indexInParentPath) {
         if (sibling == 1) {
-            if (right.size >= D + 1) {//redistribute
+            if (right.size >= D + 1) {
+                //从右节点借取对象
                 int leftIndexInParent = indexInParentPath.get(indexInParentPath.size() - 1);
                 left.append((K) parent.keys[leftIndexInParent], (NonLeaf) right.children[0]);
                 int count = (right.size - 2 + 1) / 2 - 1;
@@ -241,7 +242,8 @@ public class BPlugsTree2<K extends Comparable, V> {
                 parent.insertKey(leftIndexInParent, (K) right.keys[0]);
                 right.deleteKey(0);
                 return -1;
-            } else {//merge
+            } else {
+                //合并节点
                 int leftIndexInParent = indexInParentPath.get(indexInParentPath.size() - 1);
                 right.insertKey(0, (K) parent.keys[leftIndexInParent]);
                 right.insertChild(0, left.children[left.children.length - 1]);
@@ -260,7 +262,8 @@ public class BPlugsTree2<K extends Comparable, V> {
                 }
             }
         } else {
-            if (left.keys.length >= D + 1) {//redistribute
+            //找左节点借取数据
+            if (left.keys.length >= D + 1) {
                 int rightIndexInParent = indexInParentPath.get(indexInParentPath.size() - 1);
                 right.insertKey(0, (K) parent.keys[rightIndexInParent - 1]);
                 right.insertChild(0, left.children[left.children.length - 1]);
@@ -277,7 +280,8 @@ public class BPlugsTree2<K extends Comparable, V> {
                 parent.insertKey(rightIndexInParent - 1, (K) left.keys[left.keys.length - 1]);
                 parent.deleteKey(left.keys.length - 1);
                 return -1;
-            } else {//merge
+            } else {
+                //合并数据
                 int rightIndexInParent = indexInParentPath.get(indexInParentPath.size() - 1);
                 right.insertKey(0, (K) parent.keys[rightIndexInParent - 1]);
                 right.insertChild(0, left.children[left.children.length - 1]);
