@@ -89,9 +89,7 @@ public class BPlugsTree2<K extends Comparable, V> {
                 path.add(tempNode);
                 NonLeaf<K, V> nonLeaf = (NonLeaf<K, V>) tempNode;
                 int i = nonLeaf.getIndex(k);
-                if (i < 0) {
-                    i = -i - 1;
-                }
+                i = i < 0 ? ~i : i + 1;
                 indexInParentPath.add(i); // ith in parent's children - ArrayList
                 tempNode = nonLeaf.children[i];
             }
@@ -765,7 +763,7 @@ public class BPlugsTree2<K extends Comparable, V> {
         @Override
         protected void delete(K k) {
             int i = getIndex(k);
-            if (i > 0) {
+            if (i >= 0) {
                 Comparable[] newKey = new Comparable[this.size - 1];
                 Object[] newValue = new Object[this.size - 1];
                 copyExclude(newKey, newValue, i);
@@ -787,8 +785,8 @@ public class BPlugsTree2<K extends Comparable, V> {
         private void copyExclude(Comparable[] newKeys, Object[] newValue, int exclude) {
             System.arraycopy(this.keys, 0, newKeys, 0, exclude);
             System.arraycopy(this.values, 0, newValue, 0, exclude);
-            System.arraycopy(this.keys, exclude + 1, newKeys, exclude, this.size-exclude-1);
-            System.arraycopy(this.values, exclude + 1, newValue, exclude, this.size-exclude-1);
+            System.arraycopy(this.keys, exclude + 1, newKeys, exclude, this.size - exclude - 1);
+            System.arraycopy(this.values, exclude + 1, newValue, exclude, this.size - exclude - 1);
         }
 
 

@@ -24,7 +24,7 @@ class BPlugsTree2Test {
         for(int i=1;i<=20;i++){
             tree.insert(i,"test "+i);
         }
-        for(int i=11;i<=20;i++){
+        for(int i=20;i>10;i--){
             tree.delete(i);
         }
 
