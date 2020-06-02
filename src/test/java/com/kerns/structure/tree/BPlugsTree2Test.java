@@ -18,14 +18,12 @@ class BPlugsTree2Test {
         Assertions.assertEquals(100,tree.size());
     }
 
-
+    @Test
     public void testDelete(){
-
         BPlugsTree2<Integer,String> tree=new BPlugsTree2<>(4);
         for(int i=1;i<=20;i++){
             tree.insert(i,"test "+i);
         }
-
         for(int i=10;i<=20;i++){
             tree.delete(i);
         }
