@@ -787,8 +787,8 @@ public class BPlugsTree2<K extends Comparable, V> {
         private void copyExclude(Comparable[] newKeys, Object[] newValue, int exclude) {
             System.arraycopy(this.keys, 0, newKeys, 0, exclude);
             System.arraycopy(this.values, 0, newValue, 0, exclude);
-            System.arraycopy(this.keys, exclude + 1, newKeys, 0, exclude);
-            System.arraycopy(this.values, exclude + 1, newValue, 0, exclude);
+            System.arraycopy(this.keys, exclude + 1, newKeys, exclude, this.size-exclude-1);
+            System.arraycopy(this.values, exclude + 1, newValue, exclude, this.size-exclude-1);
         }
 
 
