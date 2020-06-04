@@ -76,8 +76,7 @@ public class BPlugsTree2<K extends Comparable, V> {
             node = ((NonLeaf) node).children[index];
         }
         node.delete(k);
-
-
+        //删除数据之后，需要对树进行修正
 
     }
 
