@@ -98,7 +98,7 @@ public class BPlugsTree2<K extends Comparable, V> {
             int indexInParent = indexInParentPath.get(indexInParentPath.size() - 1);
             tempLeafNode.delete(k);
             //叶子节点小于阀值
-            if (!tempLeafNode.isUnderflowed()) {//tempLeafNode is not underflowed after delete
+            if (!tempLeafNode.isUnderflowed()) {
                 indexInParent = -1;
             } else {
                 NonLeaf<K, V> parent = (NonLeaf<K, V>) path.get(path.size() - 1);
@@ -171,7 +171,7 @@ public class BPlugsTree2<K extends Comparable, V> {
             }
         } else {
             // 向兄弟节点借取数据
-            if (leftLeaf.isUnderflowed()) {
+            if (!leftLeaf.isUnderflowed()) {
                 int count = (leftLeaf.size - 2 + 1) - (leftLeaf.size - 2 + 1) / 2;
                 if (count > 0) {
                     rightLeaf.borrowFromLeft(leftLeaf, count);
@@ -183,7 +183,7 @@ public class BPlugsTree2<K extends Comparable, V> {
                 //合并兄弟节点
                 merge(leftLeaf, rightLeaf);
                 int rightIndexInParent = indexInParentPath.get(indexInParentPath.size() - 1);
-                parent.deleteKey(rightIndexInParent - 1);
+                parent.deleteByIndex(rightIndexInParent - 1);
                 if (parent.size == 0) {
                     root = rightLeaf;
                     return -1;
@@ -209,13 +209,15 @@ public class BPlugsTree2<K extends Comparable, V> {
     private void merge(Leaf<K, V> leftLeaf, Leaf<K, V> rightLeaf) {
         int newSize = rightLeaf.size + leftLeaf.size;
         Comparable[] newKeys = new Comparable[newSize];
-        Objects[] newValues = new Objects[newSize];
+        String[] newValues = new String[newSize];
         System.arraycopy(leftLeaf.keys, 0, newKeys, 0, leftLeaf.size);
         System.arraycopy(rightLeaf.keys, 0, newKeys, leftLeaf.size, rightLeaf.size);
         System.arraycopy(leftLeaf.values, 0, newValues, 0, leftLeaf.size);
         System.arraycopy(rightLeaf.values, 0, newValues, leftLeaf.size, rightLeaf.size);
         rightLeaf.keys = newKeys;
         rightLeaf.values = newValues;
+        leftLeaf.parent=null;
+        leftLeaf.next=null;
     }
 
 
@@ -346,6 +348,8 @@ public class BPlugsTree2<K extends Comparable, V> {
             System.arraycopy(this.keys, 0, newKeys, 0, index);
             System.arraycopy(this.keys, index + 1, newKeys, index, this.size
                     - index - 1);
+            this.keys=newKeys;
+            this.size=this.size-1;
         }
 
         /**
@@ -368,7 +372,7 @@ public class BPlugsTree2<K extends Comparable, V> {
          * @return
          */
         public boolean isUnderflowed() {
-            return size < (m / 2 - 1);
+            return size <= (m / 2 - 1);
         }
 
         /**
@@ -443,7 +447,8 @@ public class BPlugsTree2<K extends Comparable, V> {
         @Override
         public int getKeyCount() {
             int keyCount = 0;
-            for (int i = 0; i <= size; i++) {
+            int childSize=this.children.length;
+            for (int i = 0; i < childSize; i++) {
                 keyCount += this.children[i].getKeyCount();
             }
             return keyCount;
@@ -505,9 +510,10 @@ public class BPlugsTree2<K extends Comparable, V> {
 
         protected void deleteByIndex(int index) {
             super.deleteKey(index);
-            Node[] newChildren = new Node[this.size - 1];
+            int size=this.children.length - 1;
+            Node[] newChildren = new Node[size];
             System.arraycopy(this.children, 0, newChildren, 0, index);
-            System.arraycopy(this.children, index + 1, newChildren, index, this.size
+            System.arraycopy(this.children, index + 1, newChildren, index, size
                     - index - 1);
         }
 
@@ -742,12 +748,12 @@ public class BPlugsTree2<K extends Comparable, V> {
         protected void borrowFromLeft(Leaf left, int range) {
             int leftNewSize = left.size - range;
             Comparable[] leftNewKeys = new Comparable[leftNewSize];
-            Objects[] leftNewValues = new Objects[leftNewSize];
+            String[] leftNewValues = new String[leftNewSize];
             System.arraycopy(left.keys, 0, leftNewKeys, 0, leftNewSize);
             System.arraycopy(left.values, 0, leftNewValues, 0, leftNewSize);
-            int newSize = left.size + range;
+            int newSize = this.size + range;
             Comparable[] newKeys = new Comparable[newSize];
-            Objects[] newValues = new Objects[newSize];
+            String[] newValues = new String[newSize];
             System.arraycopy(left.keys, leftNewSize, newKeys, 0, range);
             System.arraycopy(left.values, leftNewSize, newValues, 0, range);
             System.arraycopy(this.keys, 0, newKeys, range, this.size);
