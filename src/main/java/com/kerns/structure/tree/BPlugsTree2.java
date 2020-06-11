@@ -80,11 +80,12 @@ public class BPlugsTree2<K extends Comparable, V> {
     public void delete(K k) {
         if (root instanceof Leaf) {
             Leaf<K, V> leafRoot = (Leaf<K, V>) root;
-            leafRoot.delete(k);
+            leafRoot.delete(k);//叶子节点更新数
         } else {
             List<Node<K, V>> path = new ArrayList<Node<K, V>>();
             List<Integer> indexInParentPath = new ArrayList<Integer>();
             Node<K, V> tempNode = root;
+            //递归查找非叶子节点，查找对应的叶子接口对应的父亲节点
             while (tempNode instanceof NonLeaf) {
                 path.add(tempNode);
                 NonLeaf<K, V> nonLeaf = (NonLeaf<K, V>) tempNode;
