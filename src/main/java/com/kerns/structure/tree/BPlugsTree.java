@@ -1,5 +1,7 @@
 package com.kerns.structure.tree;
 
+import java.util.Arrays;
+
 /**
  * 一个m阶的B+树包含的特性
  * 1.任意非叶子结点最多有M个子节点；且M>2；
@@ -14,9 +16,7 @@ package com.kerns.structure.tree;
  * 10.所有value都在叶子结点出现；
  * 扩展思考 B*树的实现，R树的实现
  * B+树有两种实现，最大值和最小值两种， 目前实现的是最大key链接
- * <p>
- * 用到该结构的数据库 包含 mysql ，h2，
- * 稍微有点优化，可以算类二叉树
+ *
  * @author xiaohei
  * @create 2020-04-21 下午2:23
  **/
@@ -26,7 +26,7 @@ public class BPlugsTree<K extends Comparable, V> {
      */
     private Node<K, V> root;
     /**
-     * 第一个节点
+     *
      */
     private Leaf<K, V> first;
     /**
@@ -95,6 +95,18 @@ public class BPlugsTree<K extends Comparable, V> {
 
     }
 
+    public void wirTree(){
+        Node node=root;
+        while(node instanceof NoneLeaf){
+            NoneLeaf noneLeaf= (NoneLeaf)node;
+            System.out.println(noneLeaf.toString());
+            for(Node child:noneLeaf.children){
+                System.out.print(child.toString()+"   ");
+            }
+            node=noneLeaf.children[noneLeaf.size-1];
+        }
+    }
+
     /**
      * 节点，叶子节点和非叶子节点共有方法抽取
      */
@@ -116,9 +128,8 @@ public class BPlugsTree<K extends Comparable, V> {
          */
         protected int size;
 
-        protected Node(int m) {
-            this.m = m;
-            this.keys = new Object[m];
+        protected Node(int m){
+            this.m=m;
         }
 
         /**
@@ -166,6 +177,12 @@ public class BPlugsTree<K extends Comparable, V> {
         protected boolean canBorrowEntry(Node<K, V> node) {
             return node != null && node.parent == this.parent && node.size > m / 2 && node.size > 2;
         }
+
+        public String toString(){
+            return Arrays.toString(keys);
+        }
+
+        protected abstract boolean hasChildren();
     }
 
     /**
@@ -188,6 +205,7 @@ public class BPlugsTree<K extends Comparable, V> {
 
         Leaf(int m) {
             super(m);
+            this.keys = new Object[m];
             this.values = new Object[m];
         }
 
@@ -239,8 +257,8 @@ public class BPlugsTree<K extends Comparable, V> {
                 if (this.parent == null) {
                     this.parent = new NoneLeaf(m);
                 }
-                this.keys = new Object[newSize];
-                this.values = new Object[newSize];
+                this.keys = new Object[m];
+                this.values = new Object[m];
                 this.size = newSize;
                 /** 原来节点key value 重新赋值 */
                 System.arraycopy(newKeys, 0, this.keys, 0, newSize);
@@ -262,7 +280,6 @@ public class BPlugsTree<K extends Comparable, V> {
         }
 
         public V search(K k) {
-            //二分查找是更优解。
             for (int i = 0; i < size; i++) {
                 if (k.compareTo(keys[i]) == 0) {
                     return (V) values[i];
@@ -416,6 +433,10 @@ public class BPlugsTree<K extends Comparable, V> {
             return null;
         }
 
+        protected boolean hasChildren() {
+            return false;
+        }
+
         /**
          * 删除数据
          *
@@ -472,7 +493,7 @@ public class BPlugsTree<K extends Comparable, V> {
      * @param <K>
      * @param <V>
      */
-    static class Entry<K, V> {
+   static class Entry<K, V> {
         private K k;
 
         private V v;
@@ -502,6 +523,7 @@ public class BPlugsTree<K extends Comparable, V> {
 
         public NoneLeaf(int m) {
             super(m);
+            this.keys = new Object[m];
             this.children = new Node[m];
         }
 
@@ -536,6 +558,10 @@ public class BPlugsTree<K extends Comparable, V> {
             }
         }
 
+        /**
+         * b+ 树按照道理非叶子节点其实没有前后节点的概念？
+         * @param root
+         */
         private void updateRemove(Node root) {
             //如果size 大于 m/2 不做处理
             if (this.size > 2 && this.size > m / 2) {
@@ -666,7 +692,7 @@ public class BPlugsTree<K extends Comparable, V> {
                     return children[i].search(k);
                 }
             }
-            return children[size].search(k);
+            return children[size-1].search(k);
         }
 
         /**
@@ -684,6 +710,10 @@ public class BPlugsTree<K extends Comparable, V> {
                 }
             }
             return null;
+        }
+
+        protected boolean hasChildren() {
+            return true;
         }
     }
 
