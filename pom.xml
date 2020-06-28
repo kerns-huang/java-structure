@@ -15,7 +15,7 @@
     </properties>
 
     <build>
-        <finalName>structure</finalName>
+        <finalName>java-structure</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
